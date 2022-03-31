@@ -15,6 +15,10 @@ import com.vidotto.bookservice.proxy.CambioProxy;
 import com.vidotto.bookservice.response.Cambio;
 import com.vidotto.bookservice.respository.BookRepository;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+
+@Tag(name = "Book endpoint")
 @RestController
 @RequestMapping("book-service")
 @EnableFeignClients
@@ -29,6 +33,7 @@ public class BookController {
 	@Autowired
 	private CambioProxy cambioProxy;
 	
+	@Operation(summary = "Find a specific book by your ID")
 	@GetMapping(value = "/{id}/{currency}")
 	public Book findBook(@PathVariable("id") Long id, @PathVariable("currency") String currency) {	
 		Optional<Book> oBook = bookRepository.findById(id);
