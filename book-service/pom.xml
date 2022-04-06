@@ -11,7 +11,7 @@
 	</parent>
 	<groupId>com.vidotto</groupId>
 	<artifactId>book-service</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>V1</version>
 	<name>book-service</name>
 	<description>Demo project for Spring Boot</description>
 	<properties>
@@ -115,6 +115,12 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<image>
+						<name>glasscode/${project.artifactId}:${project.version}</name>
+					</image>
+					<pullPolicy>IF_NOT_PRESENT</pullPolicy>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
