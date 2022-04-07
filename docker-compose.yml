@@ -3,15 +3,33 @@ version: '3.4'
 services:
   zipkin-server:
     image: openzipkin/zipkin:2.23.2
+    restart: always
     ports:
       - 9411:9411
+    depends_on:
+      - rabbit-mq
+    environment:
+      RABBIT_URI: amqp://guest:guest@rabbit-mq:5672
     networks:
        - vidotto-network
-  
-  naming-server:
-    image: glasscode/naming-server:V1
+
+  rabbit-mq:
+    image: rabbitmq:3.8.14-management
     ports:
-      - 8761:8761
+      - 5672:5672
+      - 15672:15672
+    networks:
+       - vidotto-network
+
+  naming-server:
+    build:
+      context: .
+      dockerfile: naming-server/Dockerfile
+    environment:
+      - EUREKA.CLIENT.REGISTERWITHEUREKA=false
+      - EUREKA.CLIENT.FETCHREGISTRY=false
+    ports:
+      - "8761:8761"
     networks:
        - vidotto-network
 
@@ -60,9 +78,13 @@ services:
       - 8765:8765
     depends_on:
       - naming-server
+      - rabbit-mq
     environment:
-      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING_APPLICATION_JSON: '{"eureka":{"client":{"serviceUrl":{"defaultZone":"http://naming-server:8761/eureka"}}}}'
       SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
+      RABBIT_URI: amqp://guest:guest@rabbit-mq:5672
+      SPRING_RABBITMQ_HOST: rabbit-mq
+      SPRING_ZIPKIN_SENDER_TYPE: rabbit
     networks:
       - vidotto-network
     
@@ -74,22 +96,26 @@ services:
       dockerfile: cambio-service/Dockerfile
     environment:
       TZ: America/Sao_Paulo
-      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING_APPLICATION_JSON: '{"eureka":{"client":{"serviceUrl":{"defaultZone":"http://naming-server:8761/eureka"}}}}'
       SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
       SPRING.APPLICATION.NAME: cambio-service
       SPRING.DATASOURCE.DRIVER-CLASS-NAME: org.mariadb.jdbc.Driver
-      SPRING.DATASOURCE.URL: jdbc:mariadb://cambio-db:3308/cambio_service?serverTimezone=UTC #?useSSL=false&serverTimezone=UTC&enabledTLSProtocols=TLSv1.2
+      SPRING.DATASOURCE.URL: jdbc:mariadb://cambio-db:3308/cambio_service?serverTimezone=UTC?createDatabaseIfNotExist=false #?useSSL=false&serverTimezone=UTC&enabledTLSProtocols=TLSv1.2
       SPRING.DATASOURCE.USERNAME: root
       SPRING.DATASOURCE.PASSWORD: 1234
-      SPRING.JPA.HIBERNATE.DDLAUTO: update
-      SPRING.FLYWAY.URL: jdbc:mariadb://cambio-db:3308/cambio_service?serverTimezone=UTC #?useSSL=false&serverTimezone=UTC&enabledTLSProtocols=TLSv1.2
+      SPRING.FLYWAY.URL: jdbc:mariadb://cambio-db:3308/cambio_service?serverTimezone=UTC
       SPRING.FLYWAY.USER: root
       SPRING.FLYWAY.PASSWORD: 1234
+      SPRING.JPA.HIBERNATE.DDLAUTO: none
+      RABBIT_URI: amqp://guest:guest@rabbit-mq:5672
+      SPRING_RABBITMQ_HOST: rabbit-mq
+      SPRING_ZIPKIN_SENDER_TYPE: rabbit
     ports: 
       - 8001:8001
     depends_on:
       - naming-server
       - cambio-db
+      - rabbit-mq
     networks:
        - vidotto-network
 
@@ -101,7 +127,7 @@ services:
       dockerfile: book-service/Dockerfile
     environment:
       TZ: America/Sao_Paulo
-      EUREKA.CLIENT.SERVICEURL.DEFAULTZONE: http://naming-server:8761/eureka
+      SPRING_APPLICATION_JSON: '{"eureka":{"client":{"serviceUrl":{"defaultZone":"http://naming-server:8761/eureka"}}}}'
       SPRING.ZIPKIN.BASEURL: http://zipkin-server:9411/
       SPRING.DATASOURCE.URL: jdbc:mariadb://cambio-db:3308/cambio_service?serverTimezone=UTC
       SPRING.DATASOURCE.USERNAME: root
@@ -109,11 +135,16 @@ services:
       SPRING.FLYWAY.URL: jdbc:mariadb://cambio-db:3308/cambio_service?serverTimezone=UTC
       SPRING.FLYWAY.USER: root
       SPRING.FLYWAY.PASSWORD: 1234
+      SPRING.JPA.HIBERNATE.DDLAUTO: none
+      RABBIT_URI: amqp://guest:guest@rabbit-mq:5672
+      SPRING_RABBITMQ_HOST: rabbit-mq
+      SPRING_ZIPKIN_SENDER_TYPE: rabbit
     ports:
       - 8100:8100
     depends_on:
       - naming-server
       - book-db
+      - rabbit-mq
     networks:
       - vidotto-network
 
