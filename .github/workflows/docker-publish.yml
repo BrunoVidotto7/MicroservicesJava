@@ -59,3 +59,14 @@ jobs:
       - name: Docker compose build
         working-directory: .
         run: docker-compose build
+
+      - name: Push to Docker hub container registry
+        run: |
+          docker tag microservicesjava_naming-server:latest ${{secrets.DOCKER_USERNAME}}/naming-service:$${{github.run_id}}
+          docker tag ${{secrets.DOCKER_USERNAME}}/api-gateway:V1 ${{secrets.DOCKER_USERNAME}}/api-gateway:$${{github.run_id}}
+          docker tag ${{secrets.DOCKER_USERNAME}}/cambio-service:V1 ${{secrets.DOCKER_USERNAME}}/cambio-service:$${{github.run_id}}
+          docker tag ${{secrets.DOCKER_USERNAME}}/book-service:V1 ${{secrets.DOCKER_USERNAME}}/book-service:$${{github.run_id}}
+          docker push ${{secrets.DOCKER_USERNAME}}/naming-service:$${{github.run_id}}
+          docker push ${{secrets.DOCKER_USERNAME}}/api-gateway:$${{github.run_id}}
+          docker push ${{secrets.DOCKER_USERNAME}}/cambio-service:$${{github.run_id}}
+          docker push ${{secrets.DOCKER_USERNAME}}/book-service:$${{github.run_id}}
