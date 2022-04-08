@@ -5,4 +5,4 @@ Microservices Course using Java and Spring Cloud
 Udemy : https://www.udemy.com/course/microservices-do-0-a-gcp-com-spring-boot-kubernetes-e-docker/
 
 &nbsp;
-[![Continuos Integration with Github](https://github.com/BrunoVidotto7/MicroservicesJava/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/BrunoVidotto7/MicroservicesJava/actions/workflows/docker-publish.yml)
+[![Continuos Integration with Github](https://github.com/BrunoVidotto7/MicroservicesJava/actions/workflows/docker-publish.yml/badge.svg?branch=dockerizing)](https://github.com/BrunoVidotto7/MicroservicesJava/actions/workflows/docker-publish.yml)
